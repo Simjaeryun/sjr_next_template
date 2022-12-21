@@ -4,14 +4,24 @@ import { useEffect } from "react";
 import { useQuery } from "react-query";
 
 const ContentBody = () => {
-	const { status, data, error } = useQuery("coinInfo", () => {
-		ApiActFoamCalculation.getCoinInfo();
-	});
-	useEffect(() => {
-		console.log(data);
-	}, []);
+	const { status, data, error } = useQuery<any>("coinInfo", () =>
+		ApiActFoamCalculation.getCoinInfo()
+	);
 
-	return <Container>Home Body</Container>;
+	useEffect(() => {
+		if (status === "loading" || status === "error") {
+			return;
+		} else {
+			console.log(data);
+		}
+	}, [status]);
+
+	return (
+		<Container>
+			Home Body
+			<div></div>
+		</Container>
+	);
 };
 
 const Container = styled.div`
