@@ -1,0 +1,49 @@
+version: 0.2
+phases:
+  install:
+    runtime-versions:
+      docker: 18
+    commands:
+      - wget -O kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.16.12/2020-07-08/bin/linux/amd64/kubectl
+      - chmod +x ./kubectl
+      - mv ./kubectl /usr/local/bin/kubectl
+      - mkdir ~/.kube
+      - aws s3 cp $CONFIG_PATH /root/.kube
+  pre_build:
+    on-failure: ABORT
+    commands:
+       - echo Logging in to Amazon ECR...
+       - $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)
+  build:
+    on-failure: ABORT
+    commands:
+      - echo Build Starting on `date`
+
+      - echo Get Codebuild ID...
+      - BUILD_ID=`aws codebuild list-builds-for-project --project-name $BUILD_NAME --query ids[0] | sed -e "s/\"//g"`
+      - echo ID=$BUILD_ID
+
+      - echo Extract Codebuild NO...
+      - BUILD_NO=`aws codebuild batch-get-builds --ids $BUILD_ID --query builds[].buildNumber[] | grep '[0-9]' | sed 's/[^0-9]//g'`
+      - echo NO=$BUILD_NO
+
+      - echo Building the Docker image...
+      - docker build -f Dockerfile.$ENV -t $IMAGE_REPO_NAME:$IMAGE_TAG$BUILD_NO .
+      - docker tag $IMAGE_REPO_NAME:$IMAGE_TAG$BUILD_NO $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG$BUILD_NO
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG$BUILD_NO
+  post_build:
+    on-failure: ABORT
+    commands:
+      - AWS_ECR_URI=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG$BUILD_NO
+      - DATE=`date`
+      - echo Build completed on $DATE
+      - sed -i.bak 's#AWS_ECR_URI#'"$AWS_ECR_URI"'#' ./k8s/deployment.yaml
+      - sed -i.bak 's#DATE_STRING#'"$DATE"'#' ./k8s/deployment.yaml
+
+      - kubectl config --kubeconfig=/root/.kube/config use-context $CLUSTER_NAME
+      
+      # first time deployment
+      # - kubectl apply -f ./k8s/deployment.yaml
+
+      # next time deployment 
+      - kubectl set image deployments/$DEPLOYMENT_NAME $DEPLOYMENT_NAME=$AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$IMAGE_REPO_NAME:$IMAGE_TAG$BUILD_NO -n $NAMESPACE --record=true

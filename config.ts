@@ -1,0 +1,13 @@
+export const CONFIG = {
+	DOMAIN: process.env.NEXT_PUBLIC_DOMAIN,
+	API_BASE_URL: process.env.NEXT_PUBLIC_API_URL,
+	ENV: process.env.NODE_ENV,
+	AUTH_TOKEN_KEY: process.env.NEXT_PUBLIC_AUTH_TOKEN_KEY,
+	API_KEYS: {
+		KAKAO: process.env.NEXT_PUBLIC_KAKAO_LOGIN_API_KEY,
+	},
+	AG_GRID_LICENSE_KEY: process.env.NEXT_PUBLIC_AG_GRID_LICENSE_KEY ?? "",
+	SSO_API_URL: process.env.NEXT_PUBLIC_API_SSO_URL ?? "ws://localhost",
+	SSO_API_RQTYPE: "getknoxsso",
+	SSO_API_DATAL: "KCD80TRAY0004", //KCTEST0001
+} as const;

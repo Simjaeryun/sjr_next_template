@@ -1,0 +1,37 @@
+{
+	"types": ["jest"],
+	"compilerOptions": {
+		"baseUrl": "src",
+		"paths": {
+			"@components/*": ["./components/*"],
+			"@apis/*": ["./apis/*"],
+			"@constants/*": ["./constants/*"],
+			"@features/*": ["./features/*"],
+			"@utils/*": ["./utils/*"],
+			"@theme/*": ["./styles/theme/*"],
+			"@icons/*": ["./components/common/@Icons/*"],
+			"@config": ["../config.ts"]
+		},
+		"target": "es5",
+		"lib": ["dom", "dom.iterable", "esnext"],
+		"allowJs": true,
+		"skipLibCheck": true,
+		"strict": true,
+		"forceConsistentCasingInFileNames": true,
+		"noEmit": true,
+		"esModuleInterop": true,
+		"module": "esnext",
+		"moduleResolution": "node",
+		"resolveJsonModule": true,
+		"isolatedModules": true,
+		"jsx": "preserve",
+		"incremental": true
+	},
+	"include": [
+		"next-env.d.ts",
+		"app.d.ts",
+		"**/*.ts",
+		"**/*.tsx",
+	],
+	"exclude": ["node_modules", "./public/mockServiceWorker.js"]
+}
