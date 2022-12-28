@@ -18,7 +18,6 @@ const ContentBody = () => {
 
 	return (
 		<Container>
-			Home Body
 			<div></div>
 		</Container>
 	);
